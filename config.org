@@ -1,0 +1,12 @@
+#+TITLE:Personal Emacs Config
+#+AUTHOR: Paul Frische
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+
+* BASIC OPTIONS
+
+#+begin_src emacs-lisp
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+#+end_src
