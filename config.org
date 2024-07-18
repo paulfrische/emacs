@@ -1,5 +1,5 @@
-#+TITLE:Personal Emacs Config
 #+AUTHOR: Paul Frische
+#+TITLE:Personal Emacs Config
 #+STARTUP: showeverything
 #+OPTIONS: toc:2
 
@@ -13,7 +13,7 @@
 	      user-emacs-directory)))
 	(bootstrap-version 7))
     (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
+       (with-current-buffer
 	  (url-retrieve-synchronously
 	   "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
 	   'silent 'inhibit-cookies)
@@ -23,12 +23,38 @@
   (setq straight-use-package-by-default t)
 #+end_src
 
-* BASIC OPTIONS
+* OPTIONS
 ** Cleaning up the UI
 #+begin_src emacs-lisp
   (menu-bar-mode -1)
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
+  (setq scroll-step 1
+	scroll-conservatively 10000
+	scroll-up-aggressively 0.0)
+#+end_src
+
+** Line Numbers
+#+begin_src emacs-lisp
+(global-display-line-numbers-mode 1)
+(global-visual-line-mode t)
+#+end_src
+
+** Setup Fonts
+#+begin_src emacs-lisp
+(set-face-attribute 'default nil
+  :font "JetBrains Mono Nerd Font"
+  :height 110
+  :weight 'medium)
+(set-face-attribute 'fixed-pitch nil
+  :font "JetBrains Mono Nerd Font"
+  :height 110
+  :weight 'medium)
+
+;; This sets the default font on all graphical frames created after restarting Emacs.
+;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
+;; are not right unless I also add this method of setting the default font.
+(add-to-list 'default-frame-alist '(font . "JetBrains Mono Nerd Font-11"))
 #+end_src
 
 ** Enabling Melpa
@@ -38,15 +64,102 @@
   (package-initialize)
 #+end_src
 
-* EVIL
+** Themes
+#+begin_src emacs-lisp
+  (use-package doom-themes
+    :config
+    (load-theme 'doom-dark+ t)
+    (doom-themes-org-config))
+#+end_src
+
+** Company
+#+begin_src emacs-lisp
+  (use-package company
+    :init
+    (global-company-mode 1))
+#+end_src
+
+** Evil Mode
 #+begin_src emacs-lisp
   (use-package undo-tree
     :config
     (global-undo-tree-mode 1))
 
   (use-package evil
+    :ensure t
     :init
     (setq evil-undo-system 'undo-tree)
+    (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+    (setq evil-want-keybinding nil)
+
     :config
     (evil-mode 1))
+
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+
+  (with-eval-after-load 'evil-maps
+    (define-key evil-insert-state-map (kbd "C-n") 'company-complete))
+#+end_src
+
+** General & Which-Key
+#+begin_src emacs-lisp
+  (use-package general
+    :config
+    (general-evil-setup)
+    (general-create-definer lead-key
+      :states '(normal insert visual emacs)
+      :keymaps 'override
+      :prefix "SPC"
+      :global-prefix "M-SPC")
+    (lead-key
+      "f f" '(find-file :wk "Find File")
+      "f c" '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :wk "Edit Config"))) 
+
+  (use-package which-key
+    :config
+    (which-key-mode 1))
+#+end_src
+
+** Smooth Scrolling
+#+begin_src emacs-lisp
+  (use-package smooth-scrolling
+    :config
+    (smooth-scrolling-mode 1))
+#+end_src
+
+** Ivy
+#+begin_src emacs-lisp
+  (use-package ivy
+    :config
+    (ivy-mode 1))
+
+  (use-package counsel
+    :config
+    (counsel-mode 1))
+#+end_src
+
+** Doom Modeline
+#+begin_src emacs-lisp
+  (use-package doom-modeline
+    :config
+    (doom-modeline-mode 1))
+#+end_src
+
+** ORG
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+  (electric-indent-mode -1)
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package toc-org
+    :commands toc-org-enable
+    :init (add-hook 'org-mode-hook 'toc-org-enable))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package org-bullets :init (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 #+end_src
